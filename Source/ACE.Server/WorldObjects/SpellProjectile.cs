@@ -23,6 +23,33 @@ namespace ACE.Server.WorldObjects
         public uint LifeProjectileDamage { get; set; }
 
         /// <summary>
+        /// Damage Debug vars
+        /// </summary>
+        public Player attacker;
+        public Creature defender;
+
+        public double debugCritDamageBonus;
+        public double debugSkillDamageBonus;
+        public double debugWandDamageBonus;
+        public double debugFinalDamage;
+        public double debugGrossDamage;
+
+        public double debugTargetResistanceMod;
+        public double debugBaseDamage;
+
+        public float debugElementBonus;
+        public float debugSlayerMod;
+        public float debugShieldMod;
+        public float debugSkillBonusMod;
+        public float debugDamageRatingMod;
+        public float debugWeaponResistanceMod;
+        
+        
+        public bool debugCriticalHit = false;
+        public bool debugResisted = false;
+
+
+        /// <summary>
         /// A new biota be created taking all of its values from weenie.
         /// </summary>
         public SpellProjectile(Weenie weenie, ObjectGuid guid) : base(weenie, guid)
@@ -409,17 +436,45 @@ namespace ACE.Server.WorldObjects
                         // Bonus clamped to a maximum of 50%
                         var percentageBonus = Math.Clamp((warSkill - Spell.Power) / 100.0f, 0.0f, 0.5f);
                         warSkillBonus = Spell.MinDamage * percentageBonus;
+
+                        // for damage debug
+                        debugSkillBonusMod = percentageBonus;
                     }
                 }
                 var baseDamage = ThreadSafeRandom.Next(Spell.MinDamage, Spell.MaxDamage);
 
                 var weaponResistanceMod = GetWeaponResistanceModifier(source, attackSkill, Spell.DamageType);
+                var targetResistanceMod = target.GetResistanceMod(resistanceType, false, weaponResistanceMod);
 
                 finalDamage = baseDamage + damageBonus + warSkillBonus;
+
+                // Where is Damage Rating Mod??
                 finalDamage *= target.GetResistanceMod(resistanceType, false, weaponResistanceMod)
                     * elementalDmgBonus * slayerBonus * shieldMod;
 
+                // for damage debug
+                debugWandDamageBonus = finalDamage * (elementalDmgBonus - 1);
+                debugGrossDamage = finalDamage * elementalDmgBonus * slayerBonus *shieldMod;
+
+                // for damage debug
+                attacker = sourcePlayer;
+                defender = target;
+
+                debugCritDamageBonus = damageBonus;
+                debugSkillDamageBonus = warSkillBonus;
+
+                debugFinalDamage = finalDamage;
+                debugBaseDamage = baseDamage;
+                debugElementBonus = elementalDmgBonus;
+                debugSlayerMod = slayerBonus;
+                debugShieldMod = shieldMod;
+                debugTargetResistanceMod = targetResistanceMod;
+                debugWeaponResistanceMod = weaponResistanceMod;
+                debugCriticalHit = criticalHit;
+                debugResisted = resisted ?? false;
+
                 return finalDamage;
+
             }
         }
 
@@ -526,6 +581,9 @@ namespace ACE.Server.WorldObjects
                 var damageResistRatingMod = Creature.GetNegativeRatingMod(target.GetDamageResistRating());
                 damage *= damageRatingMod * damageResistRatingMod;
 
+
+                // for damage debug
+                debugDamageRatingMod = damageRatingMod;
                 //Console.WriteLine($"Damage rating: " + Creature.ModToRating(damageRatingMod));
 
                 percent = (float)damage / target.Health.MaxValue;
@@ -533,7 +591,7 @@ namespace ACE.Server.WorldObjects
                 target.DamageHistory.Add(ProjectileSource, Spell.DamageType, amount);
 
                 //if (targetPlayer != null && targetPlayer.Fellowship != null)
-                    //targetPlayer.Fellowship.OnVitalUpdate(targetPlayer);
+                //targetPlayer.Fellowship.OnVitalUpdate(targetPlayer);
             }
 
             amount = (uint)Math.Round(damage.Value);    // full amount for debugging
@@ -565,6 +623,8 @@ namespace ACE.Server.WorldObjects
                 target.OnDeath(ProjectileSource, Spell.DamageType, critical);
                 target.Die();
             }
+
+            HandleLogging(attacker as Player, defender as Player);
         }
 
         /// <summary>
@@ -594,5 +654,65 @@ namespace ACE.Server.WorldObjects
 
             PhysicsObj.set_active(true);
         }
+        public void ShowInfo(Player player)
+        {
+            var info = $"Attacker: {attacker.Name} ({attacker.Guid})\n";
+
+            var targetInfo = PlayerManager.GetOnlinePlayer(player.DebugDamageTarget);
+            if (targetInfo == null)
+            {
+                player.DebugDamage = Player.DebugDamageType.None;
+                targetInfo.Session.Network.EnqueueSend(new GameMessageSystemChat(info, ChatMessageType.Broadcast));
+                return;
+            }
+
+            info += $"Defender: {defender.Name} ({defender.Guid})\n";
+            info += "----";
+            //info += $"Resisted: {debugResisted}\n";
+            info += $"Critical Hit: {debugCriticalHit}\n";
+            info += $"shieldMod: {debugShieldMod}\n";
+
+
+            info += $"weaponResistanceMod: {debugWeaponResistanceMod}\n";
+            info += $"targetResistanceMod: {debugTargetResistanceMod}\n";
+            info += $"Slayer Bonus: {debugSlayerMod}\n";
+            info += $"Skill Bonus Mod: {debugSkillBonusMod + 1}\n";
+            info += $"Wand Element Mod: {debugElementBonus}\n";
+            info += $"Damage Rating Mod: {debugDamageRatingMod}\n";
+
+            info += $"Base Damage: {debugBaseDamage}\n";
+
+            info += $"DR DamageBonus: {(debugDamageRatingMod - 1) * debugFinalDamage}\n";
+            info += $"Skill Bonus Damage: {debugSkillDamageBonus}\n";
+            info += $"Crit Damage Bonus: {debugCritDamageBonus}\n";
+            info += $"Wand Damage Bonus: {debugWandDamageBonus}\n";
+            info += $"Gross Damage:  {debugGrossDamage}\n"; 
+            info += $"Mitigated Damage: {debugGrossDamage - debugFinalDamage}\n";
+            info += $"Final Damage: {debugFinalDamage}\n";
+
+            
+
+            
+            //info += $"DamageMitigation: {debugDamageMitigation})\n";
+
+            info += "----";
+
+            targetInfo.Session.Network.EnqueueSend(new GameMessageSystemChat(info, ChatMessageType.Broadcast));
+
+        }
+        public void HandleLogging(Player attacker, Player defender)
+        {
+            if (attacker != null && (attacker.DebugDamage & Player.DebugDamageType.Attacker) != 0)
+            {
+                ShowInfo(attacker);
+                return;
+            }
+            if (defender != null && (defender.DebugDamage & Player.DebugDamageType.Defender) != 0)
+            {
+                ShowInfo(defender);
+                return;
+            }
+        }
+
     }
 }
