@@ -463,7 +463,7 @@ namespace ACE.Server.WorldObjects
                 debugCritDamageBonus = damageBonus;
                 debugSkillDamageBonus = warSkillBonus;
 
-                debugFinalDamage = finalDamage;
+                //debugFinalDamage = finalDamage;
                 debugBaseDamage = baseDamage;
                 debugElementBonus = elementalDmgBonus;
                 debugSlayerMod = slayerBonus;
@@ -596,6 +596,9 @@ namespace ACE.Server.WorldObjects
 
             amount = (uint)Math.Round(damage.Value);    // full amount for debugging
 
+            // for damage debug
+            debugFinalDamage = amount;
+
             if (critical)
                 target.EmoteManager.OnReceiveCritical(player);
 
@@ -687,7 +690,7 @@ namespace ACE.Server.WorldObjects
             info += $"Crit Damage Bonus: {debugCritDamageBonus}\n";
             info += $"Wand Damage Bonus: {debugWandDamageBonus}\n";
             info += $"Gross Damage:  {debugGrossDamage}\n"; 
-            info += $"Mitigated Damage: {debugGrossDamage - debugFinalDamage}\n";
+            //info += $"Mitigated Damage: {debugGrossDamage - debugFinalDamage}\n";
             info += $"Final Damage: {debugFinalDamage}\n";
 
             
