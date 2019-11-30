@@ -20,10 +20,11 @@ namespace ACE.Server.Factories
             int longDescDecoration = 5;
 
             ///Properties for weapons
-            double magicD = GetMissileDMod(tier);
-            double missileD = GetMissileDMod(tier);
+            //double magicD = GetMagicMissileDefenseBonus(tier);
+            //double missileD = GetMagicMissileDefenseBonus(tier);
             ////int gemCount = ThreadSafeRandom.Next(1, 5);
             ////int gemType = ThreadSafeRandom.Next(10, 50);
+
             int workmanship = GetWorkmanship(tier);
             int wieldDiff = GetWield(tier, 3);
             WieldRequirement wieldRequirments = WieldRequirement.RawSkill;
@@ -346,10 +347,23 @@ namespace ACE.Server.Factories
             // wo.SetProperty(PropertyFloat.WeaponMissileDefense, missileD);
             // wo.SetProperty(PropertyFloat.WeaponMagicDefense, magicD);
 
+
+            // Setting +Attack and +MeleeD
             wo.WeaponDefense = weaponDefense;
             wo.WeaponOffense =  weaponOffense;
-            wo.WeaponMissileDefense = missileD;
-            wo.WeaponMagicDefense = magicD;
+
+            // A 5% chance to get any MagicD/Missile Bonus (20% here, 20% in GetWieldReqMeleeDMod())
+            int chance = ThreadSafeRandom.Next(1, 5);
+            if (chance > 4)
+            {
+                wo.WeaponMagicDefense = GetMagicMissileDefenseBonus(tier);
+            }
+
+            chance = ThreadSafeRandom.Next(1, 5);
+            if (chance > 4)
+            {
+                wo.WeaponMissileDefense = GetMagicMissileDefenseBonus(tier);
+            }
 
             if (wieldDiff > 0)
             {

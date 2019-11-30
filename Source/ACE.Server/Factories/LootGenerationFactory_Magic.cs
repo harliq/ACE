@@ -185,21 +185,20 @@ namespace ACE.Server.Factories
 
             // Setting Weapon defensive mods 
             wo.WeaponDefense = GetWieldReqMeleeDMod(wield);
-            // A 5% chance to get any MagicD/Missile Bonus
-            if (wield > 355)
-            {
-                int chance = ThreadSafeRandom.Next(1, 40);
-                if (chance > 39)
-                {
-                    wo.WeaponMagicDefense = GetMagicMissileDefenseBonus();
-                }
 
-                chance = ThreadSafeRandom.Next(1, 40);
-                if (chance > 39)
-                {
-                    wo.WeaponMissileDefense = GetMagicMissileDefenseBonus();
-                }
+            // A 5% chance to get any MagicD/Missile Bonus (20% here, 20% in GetWieldReqMeleeDMod())
+            int chance = ThreadSafeRandom.Next(1, 5);
+            if (chance > 4)
+            {
+                wo.WeaponMagicDefense = GetMagicMissileDefenseBonus(tier);
             }
+
+            chance = ThreadSafeRandom.Next(1, 5);
+            if (chance > 4)
+            {
+                wo.WeaponMissileDefense = GetMagicMissileDefenseBonus(tier);
+            }
+           
             // Setting weapon Offensive Mods
             if (elementalDamageMod > 1.0f)
                 wo.ElementalDamageMod = elementalDamageMod;
