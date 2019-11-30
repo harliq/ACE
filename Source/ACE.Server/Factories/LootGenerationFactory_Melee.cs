@@ -22,8 +22,8 @@ namespace ACE.Server.Factories
             ///Properties for weapons
             double magicD = GetMissileDMod(tier);
             double missileD = GetMissileDMod(tier);
-            int gemCount = ThreadSafeRandom.Next(1, 5);
-            int gemType = ThreadSafeRandom.Next(10, 50);
+            ////int gemCount = ThreadSafeRandom.Next(1, 5);
+            ////int gemType = ThreadSafeRandom.Next(10, 50);
             int workmanship = GetWorkmanship(tier);
             int wieldDiff = GetWield(tier, 3);
             WieldRequirement wieldRequirments = WieldRequirement.RawSkill;
@@ -315,53 +315,70 @@ namespace ACE.Server.Factories
             if (wo == null)
                 return null;
 
-            wo.SetProperty(PropertyInt.AppraisalLongDescDecoration, longDescDecoration);
-            wo.SetProperty(PropertyString.LongDesc, wo.GetProperty(PropertyString.Name));
+            // wo.SetProperty(PropertyInt.AppraisalLongDescDecoration, longDescDecoration);
+            // wo.SetProperty(PropertyString.LongDesc, wo.GetProperty(PropertyString.Name));
 
-            wo.SetProperty(PropertyInt.GemCount, gemCount);
-            wo.SetProperty(PropertyInt.GemType, gemType);
+            wo.AppraisalLongDescDecoration = longDescDecoration;
+            wo.LongDesc = wo.Name;
+            wo.GemCount = ThreadSafeRandom.Next(1, 5);
+            wo.GemType = (MaterialType)ThreadSafeRandom.Next(10, 50);
+
+
+            // wo.SetProperty(PropertyInt.GemCount, gemCount);
+            // wo.SetProperty(PropertyInt.GemType, gemType);
+
             int materialType = GetMaterialType(wo, tier);
             if (materialType > 0)
                 wo.MaterialType = (MaterialType)materialType;
-            wo.SetProperty(PropertyInt.ItemWorkmanship, workmanship);
 
-            wo.SetProperty(PropertyInt.Damage, damage);
-            wo.SetProperty(PropertyFloat.DamageVariance, damageVariance);
 
-            wo.SetProperty(PropertyFloat.WeaponDefense, weaponDefense);
-            wo.SetProperty(PropertyFloat.WeaponOffense, weaponOffense);
-            wo.SetProperty(PropertyFloat.WeaponMissileDefense, missileD);
-            wo.SetProperty(PropertyFloat.WeaponMagicDefense, magicD);
+            // wo.SetProperty(PropertyInt.ItemWorkmanship, workmanship);
+            wo.ItemWorkmanship = workmanship;
+
+
+            // wo.SetProperty(PropertyInt.Damage, damage);
+            // wo.SetProperty(PropertyFloat.DamageVariance, damageVariance);
+            wo.Damage = damage;
+            wo.DamageVariance = damageVariance;
+
+            // wo.SetProperty(PropertyFloat.WeaponDefense, weaponDefense);
+            // wo.SetProperty(PropertyFloat.WeaponOffense, weaponOffense);
+            // wo.SetProperty(PropertyFloat.WeaponMissileDefense, missileD);
+            // wo.SetProperty(PropertyFloat.WeaponMagicDefense, magicD);
+
+            wo.WeaponDefense = weaponDefense;
+            wo.WeaponOffense =  weaponOffense;
+            wo.WeaponMissileDefense = missileD;
+            wo.WeaponMagicDefense = magicD;
 
             if (wieldDiff > 0)
             {
-                wo.SetProperty(PropertyInt.WieldDifficulty, wieldDiff);
-                wo.SetProperty(PropertyInt.WieldRequirements, (int)wieldRequirments);
-                wo.SetProperty(PropertyInt.WieldSkillType, (int)wieldSkillType);
+                ////wo.SetProperty(PropertyInt.WieldDifficulty, wieldDiff);
+                ////wo.SetProperty(PropertyInt.WieldRequirements, (int)wieldRequirments);
+                ////wo.SetProperty(PropertyInt.WieldSkillType, (int)wieldSkillType);
+                wo.WieldRequirements = wieldRequirments;
+                wo.WieldSkillType = (int)wieldSkillType;
+                wo.WieldDifficulty = wieldDiff;
             }
             else
             {
-                wo.RemoveProperty(PropertyInt.WieldDifficulty);
-                wo.RemoveProperty(PropertyInt.WieldRequirements);
-                wo.RemoveProperty(PropertyInt.WieldSkillType);
+                wo.WieldRequirements = WieldRequirement.Invalid;
+                wo.WieldSkillType = null;
+                wo.WieldDifficulty = null;
             }
 
             if (isMagical)
                 wo = AssignMagic(wo, tier);
             else
             {
-                wo.RemoveProperty(PropertyInt.ItemManaCost);
-                wo.RemoveProperty(PropertyInt.ItemMaxMana);
-                wo.RemoveProperty(PropertyInt.ItemCurMana);
-                wo.RemoveProperty(PropertyInt.ItemSpellcraft);
-                wo.RemoveProperty(PropertyInt.ItemDifficulty);
+                wo.ItemManaCost = null;
+                wo.ItemMaxMana = null;
+                wo.ItemCurMana = null;
+                wo.ItemSpellcraft = null;
+                wo.ItemDifficulty = null;
             }
-
-            double materialMod = LootTables.getMaterialValueModifier(wo);
-            double gemMaterialMod = LootTables.getGemMaterialValueModifier(wo);
-            var value = GetValue(tier, workmanship, gemMaterialMod, materialMod);
-            wo.Value = value;
-
+                        
+            wo.Value = GetValue(tier, wo.ItemWorkmanship.Value, LootTables.getMaterialValueModifier(wo), LootTables.getGemMaterialValueModifier(wo));
             wo = RandomizeColor(wo);
             return wo;
         }
@@ -721,7 +738,9 @@ namespace ACE.Server.Factories
             }
 
             // To add a little bit of randomness to Max weapon damage
-            int maxDamageVariance = ThreadSafeRandom.Next(-4, 2);
+            int maxDamageVariance = ThreadSafeRandom.Next(-4, 0);
+
+            int chance = ThreadSafeRandom.Next(1, 100);
 
             return damageTable + maxDamageVariance;
         }
