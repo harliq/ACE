@@ -43,9 +43,18 @@ namespace ACE.Server.Factories
             if (meleeDMod > 0.0f) 
                 wo.SetProperty(PropertyFloat.WeaponDefense, meleeDMod);
 
-            double missileDMod = GetMissileDMod(tier);
-            if (missileDMod > 0.0f)
-                wo.SetProperty(PropertyFloat.WeaponMissileDefense, missileDMod);
+            // A 5% chance to get any MagicD/Missile Bonus (20% here, 20% in GetWieldReqMeleeDMod())
+            int chance = ThreadSafeRandom.Next(1, 5);
+            if (chance > 4)
+            {
+                wo.WeaponMagicDefense = GetMagicMissileDefenseBonus(tier);
+            }
+
+            chance = ThreadSafeRandom.Next(1, 5);
+            if (chance > 4)
+            {
+                wo.WeaponMissileDefense = GetMagicMissileDefenseBonus(tier);
+            }
 
             // wo.SetProperty(PropertyFloat.WeaponMagicDefense, magicDefense);
 

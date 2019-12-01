@@ -954,6 +954,7 @@ namespace ACE.Server.Factories
                     manaRate = 0.04166667;
                     break;
                 default:
+                    //manaRate = wo.Workmanship.Value * wo.
                     manaRate = 1.0 / ThreadSafeRandom.Next(10, 30);
                     break;
             }
@@ -1714,7 +1715,6 @@ namespace ACE.Server.Factories
 
             return maxmana;
         }
-
         /// <summary>
         /// Returns an appropriate material type for the World Object based on its loot tier.
         /// </summary>
@@ -2404,7 +2404,6 @@ namespace ACE.Server.Factories
         ////    return mBonus +1;
 
             
-        }
-    } 
         
+    }        
 }
