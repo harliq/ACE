@@ -20,6 +20,7 @@ namespace ACE.Server.Factories
     public class LootStats
     {
         // Counters
+
             public float ArmorCount { get; set; }
             public float MeleeWeaponCount { get; set; }
             public float CasterCount { get; set; }
@@ -31,6 +32,19 @@ namespace ACE.Server.Factories
             public float NullCount { get; set; }
             public int MinItemsCreated { get; set; }
             public int MaxItemsCreated { get; set; }
+            public int SpellComponents { get; set; }
+            public int Food { get; set; }
+            public int Key { get; set; }
+            public int ManaStone { get; set; }
+            public int Misc { get; set; }
+            public int TotalItems { get; set; }
+        public int Scrolls { get; set; }
+        public int Pets { get; set; }
+        public int Spirits { get; set; }
+        public int Poitions { get; set; }
+        public int HealingKit { get; set; }
+        public int DinnerWare { get; set; }
+        public int LevelEightComp { get; set; }
 
         // Weapon Tables
             public string MeleeWeapons { get; set; }
@@ -148,6 +162,9 @@ namespace ACE.Server.Factories
             double magicDefMod = 0.00f;
             double wield = 0.00f;
             int value = 0;
+
+            ls.TotalItems++;
+
             // Loop depending on how many items you are creating
             for (int i = 0; i < 1; i++)
             {
@@ -165,12 +182,12 @@ namespace ACE.Server.Factories
                     continue;
                 }
 
-                switch (itemType)
+
+                switch (testItem.ItemType)
                 {
-                    case "Armor":
-                        ls.ArmorCount++;
+                    case ItemType.None:
                         break;
-                    case "MeleeWeapon":
+                    case ItemType.MeleeWeapon:
                         ls.MeleeWeaponCount++;
                         if (testItem.WeaponMagicDefense != null)
                             magicDefMod = testItem.WeaponMagicDefense.Value;
@@ -184,28 +201,60 @@ namespace ACE.Server.Factories
                             ls.MeleeWeapons = ls.MeleeWeapons + $" {testItem.WeaponSkill}\t {wield}\t {testItem.Damage.Value}\t\t {testItem.DamageVariance.Value}\t\t {testItem.WeaponDefense.Value}\t\t {magicDefMod}\t\t {missileDefMod}\t\t {value}\t {testItem.Name}\n";
                         else
                             ls.MeleeWeapons = ls.MeleeWeapons + $" {testItem.WeaponSkill}\t\t {wield}\t {testItem.Damage.Value}\t\t {testItem.DamageVariance.Value}\t\t {testItem.WeaponDefense.Value}\t\t {magicDefMod}\t\t {missileDefMod}\t\t {value}\t {testItem.Name}\n";
-
                         break;
-                    case "Caster":
-                        ls.CasterCount++;
-                        double eleMod = 0.00f;
-                        if (testItem.WeaponMagicDefense != null)
-                            magicDefMod = testItem.WeaponMagicDefense.Value;
-                        if (testItem.Value != null)
-                            value = testItem.Value.Value;
-                        if (testItem.WeaponMissileDefense != null)
-                            missileDefMod = testItem.WeaponMissileDefense.Value;
-                        if (testItem.WieldDifficulty != null)
-                            wield = testItem.WieldDifficulty.Value;
-                        if (testItem.ElementalDamageMod != null)
-                            eleMod = testItem.ElementalDamageMod.Value;
-                        if (testItem.ItemMaxMana != null)
-                            ls.ItemMaxMana = testItem.ItemMaxMana.Value;
-
-                        ls.CasterWeapons = ls.CasterWeapons + $" {wield}\t {eleMod}\t\t {testItem.WeaponDefense.Value}\t\t  {magicDefMod}\t\t {missileDefMod}\t\t {value}\t {ls.ItemMaxMana}\n";
+                    case ItemType.Armor:
+                        ls.ArmorCount++;
                         break;
-                    case "MissileWeapon":
+                    case ItemType.Clothing:
+                        ls.ClothingCount++;
+                        break;
+                    case ItemType.Jewelry:
+                        ls.JewelryCount++;
+                        break;
+                    case ItemType.Creature:
+                        break;
+                    case ItemType.Food:
+                        ls.Food++;
+                        break;
+                    case ItemType.Money:
                         
+                        break;
+                    case ItemType.Misc:
+
+                        string spirit = "Spirit";
+                        string pet = "Essence";
+                        string potionA = "Philtre";
+                        string potionB = "Elixir";
+                        string potionC = "Tonic";
+                        string potionD = "Brew";
+                        string healingKits = "Kit";
+                        string spellcompGlyph = "Glyph";
+                        string spellcompInk = "Ink";
+                        string spellcompQuill = "Quill";
+
+                        if (testItem.Name.Contains(spirit))
+                        {
+                            ls.Spirits++;
+                            ////Console.WriteLine($"ItemType.Misc Name={testItem.Name}");
+                        }
+                        else if (testItem.Name.Contains(pet))
+                        {
+                            ////Console.WriteLine($"ItemType.Misc Name={testItem.Name}");
+                            ls.Pets++;
+                        }
+                        else if (testItem.Name.Contains(potionA) || testItem.Name.Contains(potionB) || testItem.Name.Contains(potionC) || testItem.Name.Contains(potionD))
+                            ls.Poitions++;
+                        else if (testItem.Name.Contains(spellcompGlyph) || testItem.Name.Contains(spellcompInk) || testItem.Name.Contains(spellcompQuill))
+                            ls.LevelEightComp++;
+                        else if (testItem.Name.Contains(healingKits))
+                            ls.HealingKit++;
+                        else
+                        {
+                            Console.WriteLine($"ItemType.Misc Name={testItem.Name}");
+                            ls.Misc++;
+                        }
+                        break;
+                    case ItemType.MissileWeapon:
                         double eleBonus = 0.00f;
                         double damageMod = 0.00f;
                         string missileType = "Other";
@@ -258,21 +307,142 @@ namespace ACE.Server.Factories
 
                         if (missileType == "Other")
                         {
+                            ////Console.WriteLine($"ItemType.Missile.Other Name={testItem.Name}");
+                            ls.DinnerWare++;
                         }
                         else
-                        ls.MissileWeapons = ls.MissileWeapons + $"{missileType}\t {wield}\t {Math.Round(damageMod, 2)}\t\t{eleBonus}\t\t {testItem.WeaponDefense.Value}\t\t {magicDefMod}\t\t {missileDefMod}\t\t {value}\n";
+                            ls.MissileWeapons = ls.MissileWeapons + $"{missileType}\t {wield}\t {Math.Round(damageMod, 2)}\t\t{eleBonus}\t\t {testItem.WeaponDefense.Value}\t\t {magicDefMod}\t\t {missileDefMod}\t\t {value}\n";
                         break;
-                    case "Jewelry":
-                        ls.JewelryCount++;
+                    case ItemType.Container:
                         break;
-                    case "Gem":
+                    case ItemType.Useless:
+                        Console.WriteLine($"ItemType.Useless Name={testItem.Name}");
+                        break;
+                    case ItemType.Gem:
                         ls.GemCount++;
                         break;
-                    case "Clothing":
-                        ls.ClothingCount++;
+                    case ItemType.SpellComponents:
+                        ls.SpellComponents++;
+                        break;
+                    case ItemType.Writable:
+                        string scrolls = "Scroll";
+                        
+                        if (testItem.Name.Contains(scrolls))
+                            ls.Scrolls++;
+                        else
+                            Console.WriteLine($"ItemType.Writeable Name={testItem.Name}");
+                        break;
+                    case ItemType.Key:
+                        ls.Key++;
+                        break;
+                    case ItemType.Caster:
+                        ls.CasterCount++;
+                        double eleMod = 0.00f;
+                        if (testItem.WeaponMagicDefense != null)
+                            magicDefMod = testItem.WeaponMagicDefense.Value;
+                        if (testItem.Value != null)
+                            value = testItem.Value.Value;
+                        if (testItem.WeaponMissileDefense != null)
+                            missileDefMod = testItem.WeaponMissileDefense.Value;
+                        if (testItem.WieldDifficulty != null)
+                            wield = testItem.WieldDifficulty.Value;
+                        if (testItem.ElementalDamageMod != null)
+                            eleMod = testItem.ElementalDamageMod.Value;
+                        if (testItem.ItemMaxMana != null)
+                            ls.ItemMaxMana = testItem.ItemMaxMana.Value;
+                        ls.CasterWeapons = ls.CasterWeapons + $" {wield}\t {eleMod}\t\t {testItem.WeaponDefense.Value}\t\t  {magicDefMod}\t\t {missileDefMod}\t\t {value}\t {ls.ItemMaxMana}\n";
+                        break;
+                    case ItemType.Portal:
+                        break;
+                    case ItemType.Lockable:
+                        break;
+                    case ItemType.PromissoryNote:
+                        break;
+                    case ItemType.ManaStone:
+                        ls.ManaStone++;
+                        break;
+                    case ItemType.Service:
+                        break;
+                    case ItemType.MagicWieldable:
+                        break;
+                    case ItemType.CraftCookingBase:
+                        ls.OtherCount++;
+                        break;
+                    case ItemType.CraftAlchemyBase:
+                        ls.OtherCount++;
+                        break;
+                    case ItemType.CraftFletchingBase:
+                        ls.OtherCount++;
+                        break;
+                    case ItemType.CraftAlchemyIntermediate:
+                        ls.OtherCount++;
+                        break;
+                    case ItemType.CraftFletchingIntermediate:
+                        ls.OtherCount++;
+                        break;
+                    case ItemType.LifeStone:
+                        break;
+                    case ItemType.TinkeringTool:
+                        ls.OtherCount++;
+                        break;
+                    case ItemType.TinkeringMaterial:
+                        ls.OtherCount++;
+                        break;
+                    case ItemType.Gameboard:
+                        break;
+                    case ItemType.PortalMagicTarget:
+                        break;
+                    case ItemType.LockableMagicTarget:
+                        break;
+                    case ItemType.Vestments:
+                        break;
+                    case ItemType.Weapon:
+                        break;
+                    case ItemType.WeaponOrCaster:
+                        break;
+                    case ItemType.Item:
+                        Console.WriteLine($"ItemType.item Name={testItem.Name}");
+                        break;
+                    case ItemType.RedirectableItemEnchantmentTarget:
+                        break;
+                    case ItemType.ItemEnchantableTarget:
+                        break;
+                    case ItemType.VendorShopKeep:
+                        break;
+                    case ItemType.VendorGrocer:
                         break;
                     default:
                         ls.OtherCount++;
+                        break;
+                }
+
+
+
+                switch (itemType)
+                {
+                    case "Armor":
+                        
+                        break;
+                    case "MeleeWeapon":
+                        
+                        break;
+                    case "Caster":
+                        
+                        break;
+                    case "MissileWeapon":
+                        
+                        break;
+                    case "Jewelry":
+
+                        break;
+                    case "Gem":
+
+                        break;
+                    case "Clothing":
+                        
+                        break;
+                    default:
+
 
                         break;
                 }
@@ -300,27 +470,46 @@ namespace ACE.Server.Factories
         {
             string displayStats = "";
 
-            float totalItemsGenerated = ls.ArmorCount + ls.MeleeWeaponCount + ls.CasterCount + ls.MissileWeaponCount + ls.JewelryCount + ls.GemCount + ls.ClothingCount + ls.OtherCount;
-            Console.WriteLine($" Armor={ls.ArmorCount} \n " +
+            ////float totalItemsGenerated = ls.ArmorCount + ls.MeleeWeaponCount + ls.CasterCount + ls.MissileWeaponCount + ls.JewelryCount + ls.GemCount + ls.ClothingCount + ls.OtherCount;
+            Console.WriteLine($" \n Treasure Items \n " +
+                                $"---- \n " +
+                                $"Armor={ls.ArmorCount} \n " +
                                 $"MeleeWeapon={ls.MeleeWeaponCount} \n " +
                                 $"Caster={ls.CasterCount} \n " +
                                 $"MissileWeapon={ls.MissileWeaponCount} \n " +
                                 $"Jewelry={ls.JewelryCount} \n " +
                                 $"Gem={ls.GemCount} \n " +
                                 $"Clothing={ls.ClothingCount} \n " +
+                                $"\n Generic Items \n " +
+                                $"---- \n " +
+                                $"Food={ls.Food} \n " +
+                                $"SpellComps={ls.SpellComponents} \n " +
+                                $"Keys={ls.Key} \n " +
+                                $"ManaStones={ls.ManaStone} \n " +
+                                $"Pets={ls.Pets} \n " +
+                                $"EncapSpirits={ls.Spirits} \n " +
+                                $"Scrolls={ls.Scrolls} \n " +
+                                $"Potions={ls.Poitions} \n " +
+                                $"Healing Kits={ls.HealingKit} \n " +
+                                $"Level 8 Comps={ls.LevelEightComp} \n " +
+                                $"DinnerWare={ls.DinnerWare} \n " +
+                                $"Misc={ls.Misc} \n " +
                                 $"Other={ls.OtherCount} \n " +
                                 $"NullCount={ls.NullCount} \n " +
-                                $"TotalGenerated={totalItemsGenerated}");
+                                $"Total Found={ls.ArmorCount + ls.MeleeWeaponCount+ls.CasterCount+ls.MissileWeaponCount+ls.JewelryCount+ls.GemCount+ls.ClothingCount+ls.Food+ls.SpellComponents+ls.Key+ls.ManaStone+ls.Pets+ls.Spirits+ls.Scrolls+ls.Poitions+ls.LevelEightComp+ls.HealingKit+ls.DinnerWare+ls.Misc+ls.OtherCount+ls.NullCount} \n " +
+                                $"TotalGenerated={ls.TotalItems}");
+                                
+
             Console.WriteLine();
             Console.WriteLine($" Drop Rates \n " +
-                                $"Armor= {ls.ArmorCount / totalItemsGenerated * 100}% \n " +
-                                $"MeleeWeapon= {ls.MeleeWeaponCount / totalItemsGenerated * 100}% \n " +
-                                $"Caster= {ls.CasterCount / totalItemsGenerated * 100}% \n " +
-                                $"MissileWeapon= {ls.MissileWeaponCount / totalItemsGenerated * 100}% \n " +
-                                $"Jewelry= {ls.JewelryCount / totalItemsGenerated * 100}% \n " +
-                                $"Gem= {ls.GemCount / totalItemsGenerated * 100}% \n " +
-                                $"Clothing= {ls.ClothingCount / totalItemsGenerated * 100}% \n " +
-                                $"Other={ls.OtherCount / totalItemsGenerated * 100}% \n  ");
+                                $"Armor= {ls.ArmorCount / ls.TotalItems * 100}% \n " +
+                                $"MeleeWeapon= {ls.MeleeWeaponCount / ls.TotalItems * 100}% \n " +
+                                $"Caster= {ls.CasterCount / ls.TotalItems * 100}% \n " +
+                                $"MissileWeapon= {ls.MissileWeaponCount / ls.TotalItems * 100}% \n " +
+                                $"Jewelry= {ls.JewelryCount / ls.TotalItems * 100}% \n " +
+                                $"Gem= {ls.GemCount / ls.TotalItems * 100}% \n " +
+                                $"Clothing= {ls.ClothingCount / ls.TotalItems * 100}% \n " +
+                                $"Other={ls.OtherCount / ls.TotalItems * 100}% \n  ");
 
             Console.WriteLine(ls.MeleeWeapons);
             Console.WriteLine(ls.MissileWeapons);
@@ -360,6 +549,22 @@ namespace ACE.Server.Factories
             ls.TotalMaxMana = 0;
             ls.MinItemsCreated = 100;
             ls.MaxItemsCreated = 0;
+            ls.ManaStone = 0;
+            ls.Key = 0;
+            ls.Food = 0;
+            ls.Misc = 0;
+            ls.SpellComponents = 0;
+            ls.TotalItems = 0;
+            ls.Scrolls = 0;
+            ls.Pets = 0;
+            ls.Spirits = 0;
+            ls.Poitions = 0;
+            ls.HealingKit = 0;
+            ls.DinnerWare = 0;
+            ls.LevelEightComp = 0;
+
+
+
 
             // Tables
             ls.MeleeWeapons = $"-----Melee Weapons----\n Skill \t\t\t Wield \t Damage \t Variance \t DefenseMod \t MagicDBonus \t MissileDBonus\t Value\t Type \n";
