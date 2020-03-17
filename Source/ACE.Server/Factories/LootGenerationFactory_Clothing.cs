@@ -36,8 +36,6 @@ namespace ACE.Server.Factories
                 case 7:
                 case 8:
                     maxType = LootTables.ArmorType.OlthoiAlduressaArmor;
-
-
                     break;
             }
 
@@ -59,28 +57,48 @@ namespace ACE.Server.Factories
             if (wo == null)
                 return null;
 
-            wo.SetProperty(PropertyString.LongDesc, wo.GetProperty(PropertyString.Name));
-
-            wo.SetProperty(PropertyInt.AppraisalItemSkill, 7);
-            wo.SetProperty(PropertyInt.AppraisalLongDescDecoration, 1);
-
+            // Setting general traits of Armor
+            wo.LongDesc = wo.Name;
+            wo.AppraisalItemSkill = 7;
+            wo.AppraisalLongDescDecoration = 1;
             int materialType = GetMaterialType(wo, profile.Tier);
             if (materialType > 0)
                 wo.MaterialType = (MaterialType)materialType;
 
             int gemCount = ThreadSafeRandom.Next(1, 6);
             int gemType = ThreadSafeRandom.Next(10, 50);
-            wo.SetProperty(PropertyInt.GemCount, gemCount);
-            wo.SetProperty(PropertyInt.GemType, gemType);
-
+            wo.GemCount = gemCount;
+            wo.GemType = (MaterialType)gemType;
             int workmanship = GetWorkmanship(profile.Tier);
-            wo.SetProperty(PropertyInt.ItemWorkmanship, workmanship);
+            wo.ItemWorkmanship = workmanship;
 
             double materialMod = LootTables.getMaterialValueModifier(wo);
-            double gemMaterialMod = LootTables.getGemMaterialValueModifier(wo);
-            var value = GetValue(profile.Tier, workmanship, gemMaterialMod, materialMod);
-            wo.Value = value;
+            double gemMaterialMod = LootTables.getGemMaterialValueModifier(wo);           
+            wo.Value = GetValue(profile.Tier, workmanship, gemMaterialMod, materialMod);
 
+            //wo.SetProperty(PropertyString.LongDesc, wo.GetProperty(PropertyString.Name));
+
+            //wo.SetProperty(PropertyInt.AppraisalItemSkill, 7);
+            //wo.SetProperty(PropertyInt.AppraisalLongDescDecoration, 1);
+
+            //int materialType = GetMaterialType(wo, profile.Tier);
+            //if (materialType > 0)
+            //    wo.MaterialType = (MaterialType)materialType;
+
+            //int gemCount = ThreadSafeRandom.Next(1, 6);
+            //int gemType = ThreadSafeRandom.Next(10, 50);
+            //wo.SetProperty(PropertyInt.GemCount, gemCount);
+            //wo.SetProperty(PropertyInt.GemType, gemType);
+
+            //int workmanship = GetWorkmanship(profile.Tier);
+            //wo.SetProperty(PropertyInt.ItemWorkmanship, workmanship);
+
+            //double materialMod = LootTables.getMaterialValueModifier(wo);
+            //double gemMaterialMod = LootTables.getGemMaterialValueModifier(wo);
+            //var value = GetValue(profile.Tier, workmanship, gemMaterialMod, materialMod);
+            //wo.Value = value;
+
+            // If armor needs a wield Req
             int wield;
             if (profile.Tier > 6 && armorType != LootTables.ArmorType.CovenantArmor)
             {
@@ -110,18 +128,21 @@ namespace ACE.Server.Factories
                 };
                 wield = GetCovenantWieldReq(profile.Tier, wieldSkill);
 
-                wo.SetProperty(PropertyInt.WieldRequirements, (int)WieldRequirement.RawSkill);
-                wo.SetProperty(PropertyInt.WieldSkillType, (int)wieldSkill);
-                wo.SetProperty(PropertyInt.WieldDifficulty, wield);
+                wo.WieldRequirements = WieldRequirement.RawSkill;
+                wo.WieldSkillType = (int)wieldSkill;
+                wo.WieldDifficulty = wield;
             }
 
             // Setting random color
-            wo.SetProperty(PropertyInt.PaletteTemplate, ThreadSafeRandom.Next(1, 2047));
+            wo.PaletteTemplate = ThreadSafeRandom.Next(1, 2047);
             double shade = .1 * ThreadSafeRandom.Next(0, 9);
-            wo.SetProperty(PropertyFloat.Shade, shade);
+            wo.Shade = shade;
 
+            // AL Level
             wo = AssignArmorLevel(wo, profile.Tier, armorType);
 
+            // Armor Item sets were for T7 & T8
+            if (profile.Tier > 6)
             wo = AssignEquipmentSetId(wo, profile);
 
             if (isMagical)
@@ -131,11 +152,11 @@ namespace ACE.Server.Factories
             }
             else
             {
-                wo.RemoveProperty(PropertyInt.ItemManaCost);
-                wo.RemoveProperty(PropertyInt.ItemMaxMana);
-                wo.RemoveProperty(PropertyInt.ItemCurMana);
-                wo.RemoveProperty(PropertyInt.ItemSpellcraft);
-                wo.RemoveProperty(PropertyInt.ItemDifficulty);
+                wo.ItemManaCost = null;
+                wo.ItemMaxMana = null;
+                wo.ItemCurMana = null;
+                wo.ItemSpellcraft = null;
+                wo.ItemDifficulty = null;
             }
 
             wo = RandomizeColor(wo);
@@ -400,10 +421,10 @@ namespace ACE.Server.Factories
                 }
 
                 int adjustedArmorLevel = baseArmorLevel + armorModValue;
-                wo.SetProperty(PropertyInt.ArmorLevel, adjustedArmorLevel);
+                wo.ArmorLevel = adjustedArmorLevel;
             }
 
-            if ((wo.ResistMagic == null || wo.ResistMagic < 9999) && wo.GetProperty(PropertyInt.ArmorLevel) >= 345)
+            if ((wo.ResistMagic == null || wo.ResistMagic < 9999) && wo.ArmorLevel >= 345)
                 log.Warn($"[LOOT] Standard armor item exceeding upper AL threshold {wo.WeenieClassId} - {wo.Name}");
 
             return wo;
@@ -563,7 +584,7 @@ namespace ACE.Server.Factories
                 }
 
                 int adjustedArmorLevel = baseArmorLevel + armorModValue;
-                wo.SetProperty(PropertyInt.ArmorLevel, adjustedArmorLevel);
+                wo.ArmorLevel = adjustedArmorLevel;
             }
 
             return wo;
