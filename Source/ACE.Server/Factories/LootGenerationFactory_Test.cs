@@ -152,10 +152,10 @@ namespace ACE.Server.Factories
                         {
                             if (logstats == true)
                             {
-                                ls.MeleeWeapons += $"{testItem.WeaponSkill},{wield},{testItem.Damage.Value},{strikeType},{testItem.DamageVariance.Value},{testItem.WeaponDefense.Value},{magicDefMod},{missileDefMod},{cantrip},{value},{testItem.EncumbranceVal},{testItem.Name}\n";
+                                ls.MeleeWeapons += $"{testItem.WeaponSkill},{wield},{testItem.ItemDifficulty},{testItem.Damage.Value},{strikeType},{testItem.DamageVariance.Value},{testItem.WeaponDefense.Value},{magicDefMod},{missileDefMod},{cantrip},{value},{testItem.EncumbranceVal},{testItem.Name}\n";
                             }
                             else
-                                ls.MeleeWeapons += $" {testItem.WeaponSkill}\t {wield}\t {testItem.Damage.Value}\t\t {strikeType} \t\t {testItem.DamageVariance.Value}\t\t {testItem.WeaponDefense.Value}\t\t {magicDefMod}\t\t {missileDefMod}\t\t {cantrip}\t{value}\t{testItem.EncumbranceVal} \t {testItem.Name}\n";
+                                ls.MeleeWeapons += $" {testItem.WeaponSkill}\t {wield}\t {testItem.ItemDifficulty}\t {testItem.Damage.Value}\t\t {strikeType} \t\t {testItem.DamageVariance.Value}\t\t {testItem.WeaponDefense.Value}\t\t {magicDefMod}\t\t {missileDefMod}\t\t {cantrip}\t{value}\t{testItem.EncumbranceVal} \t {testItem.Name}\n";
                         }
                         else
                         {
@@ -171,10 +171,10 @@ namespace ACE.Server.Factories
                             }
                             if (logstats == true)
                             {
-                                ls.MeleeWeapons += $"{testItem.WeaponSkill},{wield},{testItem.Damage.Value},{strikeType},{testItem.DamageVariance.Value},{testItem.WeaponDefense.Value},{magicDefMod},{missileDefMod},{cantrip},{value},{testItem.EncumbranceVal},{testItem.Name}\n";
+                                ls.MeleeWeapons += $"{testItem.WeaponSkill},{wield},{testItem.ItemDifficulty},{testItem.Damage.Value},{strikeType},{testItem.DamageVariance.Value},{testItem.WeaponDefense.Value},{magicDefMod},{missileDefMod},{cantrip},{value},{testItem.EncumbranceVal},{testItem.Name}\n";
                             }
                             else
-                                ls.MeleeWeapons += $" {testItem.WeaponSkill}\t\t {wield}\t {testItem.Damage.Value}\t\t {strikeType}\t\t {testItem.DamageVariance.Value}\t\t {testItem.WeaponDefense.Value}\t\t {magicDefMod}\t\t {missileDefMod}\t\t {cantrip}\t{value}\t{testItem.EncumbranceVal} \t {testItem.Name}\n";
+                                ls.MeleeWeapons += $" {testItem.WeaponSkill}\t\t {wield}\t {testItem.ItemDifficulty}\t {testItem.Damage.Value}\t\t {strikeType}\t\t {testItem.DamageVariance.Value}\t\t {testItem.WeaponDefense.Value}\t\t {magicDefMod}\t\t {missileDefMod}\t\t {cantrip}\t{value}\t{testItem.EncumbranceVal} \t {testItem.Name}\n";
                         }
                         break;
                     case ItemType.Armor:
@@ -454,10 +454,10 @@ namespace ACE.Server.Factories
                         {
                             if (logstats == true)
                             {
-                                ls.MissileWeapons += $"{missileType},{wield},{damageMod},{eleBonus},{testItem.WeaponDefense.Value},{magicDefMod},{missileDefMod},{value},{testItem.EncumbranceVal}\n";
+                                ls.MissileWeapons += $"{missileType},{wield},{testItem.ItemDifficulty},{damageMod},{eleBonus},{testItem.WeaponDefense.Value},{magicDefMod},{missileDefMod},{value},{testItem.EncumbranceVal}\n";
                             }
                             else
-                                ls.MissileWeapons += $"{missileType}\t {wield}\t {damageMod}\t\t{eleBonus}\t\t {testItem.WeaponDefense.Value}\t\t {magicDefMod}\t\t {missileDefMod}\t\t {value}\t {testItem.EncumbranceVal}\n";
+                                ls.MissileWeapons += $"{missileType}\t {wield}\t {testItem.ItemDifficulty}\t {damageMod}\t\t{eleBonus}\t\t {testItem.WeaponDefense.Value}\t\t {magicDefMod}\t\t {missileDefMod}\t\t {value}\t {testItem.EncumbranceVal}\n";
                         }
 
                         break;
@@ -518,10 +518,10 @@ namespace ACE.Server.Factories
                             ls.ItemMaxMana = testItem.ItemMaxMana.Value;
                         if (logstats == true)
                         {
-                            ls.CasterWeapons += $"{wield},{eleMod},{testItem.WeaponDefense.Value},{magicDefMod},{missileDefMod},{value},{testItem.EncumbranceVal},{ls.ItemMaxMana}\n";
+                            ls.CasterWeapons += $"{wield},{testItem.ItemDifficulty},{eleMod},{testItem.WeaponDefense.Value},{magicDefMod},{missileDefMod},{value},{testItem.EncumbranceVal},{ls.ItemMaxMana}\n";
                         }
                         else
-                            ls.CasterWeapons += $" {wield}\t {eleMod}\t\t {testItem.WeaponDefense.Value}\t\t  {magicDefMod}\t\t {missileDefMod}\t\t {value}\t {testItem.EncumbranceVal} \t {ls.ItemMaxMana}\n";
+                            ls.CasterWeapons += $" {wield}\t {testItem.ItemDifficulty}\t {eleMod}\t\t {testItem.WeaponDefense.Value}\t\t  {magicDefMod}\t\t {missileDefMod}\t\t {value}\t {testItem.EncumbranceVal} \t {ls.ItemMaxMana}\n";
                         break;
                     case ItemType.Portal:
                         break;
@@ -843,22 +843,22 @@ namespace ACE.Server.Factories
             // Tables
             if (logstats == true)
             {
-                ls.MeleeWeapons = $"-----Melee Weapons----\nSkill,Wield,Damage,MStrike,Variance,DefenseMod,MagicDBonus,MissileDBonus,Cantrip,Value,Burden,Type\n";
+                ls.MeleeWeapons = $"-----Melee Weapons----\nSkill,Wield,Arcane,Damage,MStrike,Variance,DefenseMod,MagicDBonus,MissileDBonus,Cantrip,Value,Burden,Type\n";
             }
             else
-                ls.MeleeWeapons = $"-----Melee Weapons----\n Skill \t\t\t Wield \t Damage \t MStrike \t Variance \t DefenseMod \t MagicDBonus \t MissileDBonus\tCantrip\t Value\t Burden\t Type \n";
+                ls.MeleeWeapons = $"-----Melee Weapons----\n Skill \t\t\t Wield \t Arcane\t Damage \t MStrike \t Variance \t DefenseMod \t MagicDBonus \t MissileDBonus\tCantrip\t Value\t Burden\t Type \n";
             if (logstats == true)
             {
-                ls.MissileWeapons = $"-----Missile Weapons----\nType,Wield,Modifier,ElementBonus,DefenseMod,MagicDBonus,MissileDBonus,Value,Burden\n";
+                ls.MissileWeapons = $"-----Missile Weapons----\nType,Wield,Arcane,Modifier,ElementBonus,DefenseMod,MagicDBonus,MissileDBonus,Value,Burden\n";
             }
             else
-                ls.MissileWeapons = $"-----Missile Weapons----\n Type \t Wield \t Modifier \tElementBonus \t DefenseMod \t MagicDBonus \t MissileDBonus\t Value\t Burden\n";
+                ls.MissileWeapons = $"-----Missile Weapons----\n Type \t Wield \t Arcane \t Modifier \tElementBonus \t DefenseMod \t MagicDBonus \t MissileDBonus\t Value\t Burden\n";
             if (logstats == true)
             {
-                ls.CasterWeapons = $"-----Caster Weapons----\nWield,ElementBonus,DefenseMod,MagicDBonus,MissileDBonus,Value,MaxMana,Burden\n";
+                ls.CasterWeapons = $"-----Caster Weapons----\nWield,Arcane,ElementBonus,DefenseMod,MagicDBonus,MissileDBonus,Value,MaxMana,Burden\n";
             }
             else
-                ls.CasterWeapons = $"-----Caster Weapons----\n Wield \t ElementBonus \t DefenseMod \t MagicDBonus \t MissileDBonus \t Value\t Burden\t MaxMana\n";
+                ls.CasterWeapons = $"-----Caster Weapons----\n Wield \t Arcane\t ElementBonus \t DefenseMod \t MagicDBonus \t MissileDBonus \t Value\t Burden\t MaxMana\n";
             if (logstats == true)
             {
                 ls.Armor = $"-----Armor----\nAL,Arcane,Value,Burden,Epic,Legendary,EquipmentSet,Type\n";
