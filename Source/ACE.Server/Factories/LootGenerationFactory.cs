@@ -955,12 +955,11 @@ namespace ACE.Server.Factories
             // Magic stats
             int numSpells = GetSpellDistribution(profile, out int minorCantrips, out int majorCantrips, out int epicCantrips, out int legendaryCantrips);
             int numCantrips = minorCantrips + majorCantrips + epicCantrips + legendaryCantrips;
-            int spellcraft = GetSpellcraft(numSpells, profile.Tier);
+            
 
             wo.UiEffects = UiEffects.Magical;
             wo.ManaRate = manaRate;
-            wo.ItemSpellcraft = spellcraft;
-            wo.ItemDifficulty = GetDifficulty(profile.Tier, spellcraft);
+
             wo.ItemMaxMana = GetMaxMana(numSpells, profile.Tier);
             wo.ItemCurMana = wo.ItemMaxMana;
 
@@ -1040,7 +1039,9 @@ namespace ACE.Server.Factories
                     wo.Biota.GetOrAddKnownSpell(spellID, wo.BiotaDatabaseLock, out _);
                 }
             }
-
+            int spellcraft = GetSpellcraft(wo, numSpells, profile.Tier);
+            wo.ItemSpellcraft = spellcraft;
+            wo.ItemDifficulty = GetDifficulty(wo, profile.Tier, spellcraft);
             return wo;
         }
 
@@ -1053,95 +1054,37 @@ namespace ACE.Server.Factories
             numEpics = 0;
             numLegendaries = 0;
 
-            int nonCantripChance = ThreadSafeRandom.Next(1, 100);
+            int nonCantripChance = ThreadSafeRandom.Next(1, 100000);
 
             numMinors = GetNumMinorCantrips(profile); // All tiers have a chance for at least one minor cantrip
+            numMajors = GetNumMajorCantrips(profile);
+            numEpics = GetNumEpicCantrips(profile);
+            numLegendaries = GetNumLegendaryCantrips(profile);
 
-            switch (profile.Tier)
-            {
-                case 1:
-                    // 1-3 w/ chance of minor cantrip
-                    if (nonCantripChance <= 50)
-                        numNonCantrips = 1;
-                    else if (nonCantripChance <= 90)
-                        numNonCantrips = 2;
-                    else
-                        numNonCantrips = 3;
-                    break;
+            //  Fixing the absurd amount of spells on items - HQ 6/21/2020
+            //  From Mags Data all tiers have about the same chance for a given number of spells on items.  This is the ratio for magical items.
+            //  1 Spell(s) - 46.410 %
+            //  2 Spell(s) - 27.040 %
+            //  3 Spell(s) - 17.850 %
+            //  4 Spell(s) - 6.875 %
+            //  5 Spell(s) - 1.525 %
+            //  6 Spell(s) - 0.235 %
+            //  7 Spell(s) - 0.065 %
 
-                case 2:
-                    // 3-4 w/ chance of either minor or major
-                    if (nonCantripChance <= 50)
-                        numNonCantrips = 3;
-                    else
-                        numNonCantrips = 4;
-                    break;
-
-                case 3:
-                    // 4-5 w/ chance of either major or minor
-                    if (nonCantripChance <= 50)
-                        numNonCantrips = 4;
-                    else
-                        numNonCantrips = 5;
-
-                    numMajors = GetNumMajorCantrips(profile);
-                    break;
-
-                case 4:
-                    // 5-6, major and minor
-                    if (nonCantripChance <= 50)
-                        numNonCantrips = 5;
-                    else
-                        numNonCantrips = 6;
-
-                    numMajors = GetNumMajorCantrips(profile);
-                    break;
-
-                case 5:
-                    // 5-7 major and minor
-                    if (nonCantripChance <= 50)
-                        numNonCantrips = 5;
-                    else if (nonCantripChance <= 90)
-                        numNonCantrips = 6;
-                    else
-                        numNonCantrips = 7;
-
-                    numMajors = GetNumMajorCantrips(profile);
-                    break;
-
-                case 6:
-                    // 6-7, minor(4 total) major(2 total)
-                    if (nonCantripChance <= 50)
-                        numNonCantrips = 6;
-                    else
-                        numNonCantrips = 7;
-
-                    numMajors = GetNumMajorCantrips(profile);
-                    break;
-
-                case 7:
-                    /// 6-7, minor(4), major(3), epic(4)
-                    if (nonCantripChance <= 50)
-                        numNonCantrips = 6;
-                    else
-                        numNonCantrips = 7;
-
-                    numMajors = GetNumMajorCantrips(profile);
-                    numEpics = GetNumEpicCantrips(profile);
-                    break;
-
-                default:
-                    // 6-7, minor(4), major(3), epic(4), legendary(2)
-                    if (nonCantripChance <= 50)
-                        numNonCantrips = 6;
-                    else
-                        numNonCantrips = 7;
-
-                    numMajors = GetNumMajorCantrips(profile);
-                    numEpics = GetNumEpicCantrips(profile);
-                    numLegendaries = GetNumLegendaryCantrips(profile);
-                    break;
-            }
+            if (nonCantripChance <= 46410)
+                numNonCantrips = 1;
+            else if (nonCantripChance <= 73450)
+                numNonCantrips = 2;
+            else if (nonCantripChance <= 91300)
+                numNonCantrips = 3;
+            else if (nonCantripChance <= 98175)
+                numNonCantrips = 4;
+            else if (nonCantripChance <= 99700)
+                numNonCantrips = 5;
+            else if (nonCantripChance <= 99935)
+                numNonCantrips = 6;
+            else
+                numNonCantrips = 7;
 
             return numNonCantrips + numMinors + numMajors + numEpics + numLegendaries;
         }
@@ -1545,76 +1488,86 @@ namespace ACE.Server.Factories
             return workmanship;
         }
 
-        private static int GetSpellcraft(int spellAmount, int tier)
+        private static int GetSpellcraft(WorldObject wo, int spellAmount, int tier)
         {
-            int spellcraft = 0;
-            switch (tier)
+
+            var min = 0.0f;
+            var max = 0.0f;
+
+            //  Values taken from Riggs Port
+            switch (wo.ItemType)
             {
-                case 1:
-                    spellcraft = ThreadSafeRandom.Next(1, 20) + spellAmount * ThreadSafeRandom.Next(1, 4); //1-50
+                case ItemType.MeleeWeapon:
+                case ItemType.Caster:
+                case ItemType.MissileWeapon:
+                case ItemType.Armor:
+                case ItemType.Clothing:
+                case ItemType.Jewelry:
+                    min = 0.90f;
+                    max = 1.10f;
                     break;
-                case 2:
-                    spellcraft = ThreadSafeRandom.Next(40, 70) + spellAmount * ThreadSafeRandom.Next(1, 5); //40-90
-                    break;
-                case 3:
-                    spellcraft = ThreadSafeRandom.Next(70, 90) + spellAmount * ThreadSafeRandom.Next(1, 6); //80 - 130
-                    break;
-                case 4:
-                    spellcraft = ThreadSafeRandom.Next(100, 120) + spellAmount * ThreadSafeRandom.Next(1, 7); /// 120 - 160
-                    break;
-                case 5:
-                    spellcraft = ThreadSafeRandom.Next(130, 150) + spellAmount * ThreadSafeRandom.Next(1, 8); ///150 - 210
-                    break;
-                case 6:
-                    spellcraft = ThreadSafeRandom.Next(160, 180) + spellAmount * ThreadSafeRandom.Next(1, 9); /// 200-260
-                    break;
-                case 7:
-                    spellcraft = ThreadSafeRandom.Next(230, 260) + spellAmount * ThreadSafeRandom.Next(1, 10); /// 250 - 310
-                    break;
-                case 8:
-                    spellcraft = ThreadSafeRandom.Next(280, 300) + spellAmount * ThreadSafeRandom.Next(1, 11); //300-450
+                case ItemType.Gem:
+                    min = 1.00f;
+                    max = 1.00f;
                     break;
                 default:
+                    min = 1.00f;
+                    max = 1.00f;
                     break;
             }
 
-            return spellcraft;
+            // Getting the spell difficulty - Maybe a better way to do this.
+            var maxSpellLevel = wo.GetMaxSpellLevel();
+            int maxSpellDiff = 1;
+
+            if (maxSpellLevel == 2)
+                maxSpellDiff = 50;
+            else if (maxSpellLevel == 3)
+                maxSpellDiff = 100;
+            else if (maxSpellLevel == 4)
+                maxSpellDiff = 150;
+            else if (maxSpellLevel == 5)
+                maxSpellDiff = 200;
+            else if (maxSpellLevel == 6)
+                maxSpellDiff = 250;
+            else if (maxSpellLevel == 7)
+                maxSpellDiff = 300;
+            else if (maxSpellLevel == 8)
+                maxSpellDiff = 400;  //  Is this 400 or 350?   I know on calcuating spell damage bonus, its 350, but also know need 400 skill to cast a lvl 8 spell. Sticking with 400 for now.
+
+            var spellCraft = maxSpellDiff * ThreadSafeRandom.Next(min, max);
+
+            //return spellCraft;
+            return (int)(spellCraft < 0 ? 0 : Math.Floor(spellCraft));
         }
 
-        private static int GetDifficulty(int tier, int spellcraft)
+        private static int GetDifficulty(WorldObject wo, int tier, int spellcraft)
         {
-            int difficulty = 0;
-            switch (tier)
-            {
-                case 1:
-                    difficulty = spellcraft + (ThreadSafeRandom.Next(0, 10) * ThreadSafeRandom.Next(1, 3));
-                    break;
-                case 2:
-                    difficulty = spellcraft + (ThreadSafeRandom.Next(0, 10) * ThreadSafeRandom.Next(1, 3));
-                    break;
-                case 3:
-                    difficulty = spellcraft + (ThreadSafeRandom.Next(0, 10) * ThreadSafeRandom.Next(1, 3));
-                    break;
-                case 4:
-                    difficulty = spellcraft + (ThreadSafeRandom.Next(0, 10) * ThreadSafeRandom.Next(1, 3));
-                    break;
-                case 5:
-                    difficulty = spellcraft + (ThreadSafeRandom.Next(0, 10) * ThreadSafeRandom.Next(1, 3));
-                    break;
-                case 6:
-                    difficulty = spellcraft + (ThreadSafeRandom.Next(0, 10) * ThreadSafeRandom.Next(1, 3));
-                    break;
-                case 7:
-                    difficulty = spellcraft + (ThreadSafeRandom.Next(0, 10) * ThreadSafeRandom.Next(1, 3));
-                    break;
-                case 8:
-                    difficulty = spellcraft + (ThreadSafeRandom.Next(0, 10) * ThreadSafeRandom.Next(1, 3));
-                    break;
-                default:
-                    break;
-            }
+            // Taken from Riggs Treasure Port and modified to work with ACE.
 
-            return difficulty;
+            int allegianceLimit = 0;  // Not really being used, but availabe to be used in calc
+
+            // Do I need to do an additional calc here?
+            int skillLimit = 1;       // Skill Limit is supposed to be the Wield Req of a weapon.  (ie. 330,355,360,400, etc..)  
+
+            if (wo.ItemAllegianceRankLimit.HasValue)
+                allegianceLimit = wo.ItemAllegianceRankLimit.Value;
+            if (wo.WieldDifficulty.HasValue)
+                if (wo.WieldDifficulty == 150 || wo.WieldDifficulty == 180)  // Wield Levels are going to be first if they are T7 or T8.  Moving to secound Diff.
+                    if (wo.WieldDifficulty2.HasValue)
+                        skillLimit = wo.WieldDifficulty2.Value;
+                else                    
+                    skillLimit = wo.WieldDifficulty.Value;      
+
+            var heritageLimit = wo.Heritage.HasValue ? 0.75f : 1.0f;  
+            if (allegianceLimit == 0)
+                allegianceLimit = 1;
+
+            var diff = spellcraft * heritageLimit * 2.0f;
+            diff /= allegianceLimit + 1.0f;
+            diff -= skillLimit / 2.0f;
+
+            return (int)(diff < 0 ? 0 : Math.Floor(diff));
         }
 
         private static int GetMaxMana(int spellAmount, int tier)
